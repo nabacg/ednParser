@@ -3,8 +3,9 @@ package net.cabworks.test.EdnParser
 
 
 import org.scalatest.FunSuite
-import net.cabworks.EdnParser.EdnParser
+import net.cabworks.EdnParser.{InstantReader, EdnParser}
 import clojure.lang.{Keyword, Symbol}
+import java.util.UUID
 /**
  * Created by cab on 03/10/2015.
  */
@@ -46,6 +47,20 @@ class ParserTest extends FunSuite{
     assertResult(0.5) {testEval("1/2")}
     assertResult(0.5) {testEval("6/12")}
     assertResult(Set(0.5, 1)) { testEval("#{1/2 42/42}") }
+  }
+
+  test("dates aka #inst") {
+    val dateString = "2015-07-30T01:23:45.000-00:00"
+    assertResult(InstantReader.read(dateString)) {testEval(f"""#inst \"$dateString\"""")}
+
+    val dateStringNoOffset = "1985-04-12T23:20:50.52Z"
+    assertResult(InstantReader.read(dateString)) {testEval(f"""#inst \"$dateString\"""")}
+  }
+
+  test("#uuid tagged elem") {
+    var uuid = UUID.randomUUID()
+    assertResult(uuid) { testEval(s"""#uuid \"${uuid.toString}\"""") }
+    assertResult(UUID.fromString("f81d4fae-7dec-11d0-a765-00a0c91e6bf6")) { testEval("#uuid \"f81d4fae-7dec-11d0-a765-00a0c91e6bf6\"")}
   }
 
   test("List") {

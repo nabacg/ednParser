@@ -1,7 +1,7 @@
 package net.cabworks.EdnParser
 
+import java.util.UUID
 import clojure.lang.{Keyword, Symbol}
-
 import scala.util.parsing.combinator._
 /**
  * Created by cab on 03/10/2015.
@@ -18,6 +18,12 @@ object EdnParser extends JavaTokenParsers {
     case k ~ v => (k, v)
   }
 
+  lazy val tagElem : Parser[Any] = """#[^,#\"\{\}\[\]\s]+""".r ~ expr ^^ {
+    case "#inst" ~ (value : String) => InstantReader.read(value)
+    case "#uuid" ~ (value : String) => UUID.fromString(value)
+    case name ~ value => (name, value) //maybe return Map(tag -> name, value -> value ) ?
+  }
+
   val ratio : Parser[Double] = decimalNumber ~ "/" ~ decimalNumber ^^ { case n ~ _ ~ d => n.toDouble / d.toDouble }
 
   val keyword : Parser[Keyword] = ":" ~> """[^,#\"\{\}\[\]\s]+""".r ^^ (Keyword.intern(_) )
@@ -28,8 +34,9 @@ object EdnParser extends JavaTokenParsers {
                 vector |
                 set |
                 keyword |
+                tagElem |
                 ratio |
-           //     wholeNumber <~ not(".") ^^ (_.toInt) |
+  //     wholeNumber <~ not(".") ^^ (_.toInt) |
                 floatingPointNumber ^^ (_.toDouble) |
                 "nil" ^^ (_ => null) |
                 "true" ^^ (_ => true) |
@@ -47,3 +54,5 @@ object EdnParser extends JavaTokenParsers {
     case Success(r,n) => r
   }
 }
+
+
