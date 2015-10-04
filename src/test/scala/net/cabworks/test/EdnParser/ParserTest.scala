@@ -17,13 +17,14 @@ class ParserTest extends FunSuite{
     assertResult(1){testEval("0001")}
     assertResult(23) {testEval("23")}
     assertResult(1) {testEval("1")}
-
+    assertResult(-43) { testEval("-43")}
   }
   test("floating point") {
     assertResult(53.1) {testEval("53.1")}
     assertResult(1.5) {testEval("1.5")}
     assertResult(0.0005) {testEval("0.0005")}
     assertResult(0.5) {testEval("0.5000")}
+    assertResult(-3.14) {testEval("-3.14")}
   }
 
   test("nil ") {

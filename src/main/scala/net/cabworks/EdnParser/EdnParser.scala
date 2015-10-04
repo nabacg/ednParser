@@ -18,31 +18,32 @@ object EdnParser extends JavaTokenParsers {
     case k ~ v => (k, v)
   }
 
-  val ratio : Parser[Double] = decimalNumber ~ "/" ~ decimalNumber ^^ { case n ~ "/" ~ d => n.toDouble / d.toDouble }
+  val ratio : Parser[Double] = decimalNumber ~ "/" ~ decimalNumber ^^ { case n ~ _ ~ d => n.toDouble / d.toDouble }
 
   val keyword : Parser[Keyword] = ":" ~> """[^,#\"\{\}\[\]\s]+""".r ^^ (Keyword.intern(_) )
   val symbol : Parser[Symbol]   = """[a-zA-Z][^,#\"\{\}\[\]\(\)\s]*""".r ^^ (Symbol.create(_))
 
-  val ednExpr : Parser[Any] = list |
+  val ednElem : Parser[Any] = list |
                 map |
                 vector |
                 set |
                 keyword |
                 ratio |
-                wholeNumber <~ not(".") ^^ (_.toInt) |
-                decimalNumber ^^ (_.toDouble) |
+           //     wholeNumber <~ not(".") ^^ (_.toInt) |
+                floatingPointNumber ^^ (_.toDouble) |
                 "nil" ^^ (_ => null) |
                 "true" ^^ (_ => true) |
                 "false" ^^ (_ => false) |
                 symbol |
                 stringLiteral ^^ { case "" => ""; case s => s.tail.init}
 
-  val expr : Parser[Any] = ednExpr | "," ~> expr //| "N" ~> expr
+  val expr : Parser[Any] = ednElem | "," ~> expr | "N" ~> expr
 
 
 
   def eval(input: String) : Any = parseAll(expr, input) match {
-    case Failure(msg, next)=> println(msg + " " + next.toString)
+    case Failure(msg, n)=> println(msg + " " + n.toString)
+    case Error(msg, n) => println("Fatal error" + msg)
     case Success(r,n) => r
   }
 }
