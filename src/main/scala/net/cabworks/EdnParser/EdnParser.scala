@@ -18,7 +18,7 @@ object EdnParser extends JavaTokenParsers {
     case k ~ v => (k, v)
   }
 
-  lazy val tagElem : Parser[Any] = """#[^,#\"\{\}\[\]\s]+""".r ~ expr ^^ {
+  lazy val tagElem : Parser[Any] = """#[^,_#\"\{\}\[\]\s]+""".r ~ expr ^^ {
     case "#inst" ~ (value : String) => InstantReader.read(value)
     case "#uuid" ~ (value : String) => UUID.fromString(value)
     case name ~ value => (name, value) //maybe return Map(tag -> name, value -> value ) ?
@@ -28,6 +28,7 @@ object EdnParser extends JavaTokenParsers {
 
   val keyword : Parser[Keyword] = ":" ~> """[^,#\"\{\}\[\]\s]+""".r ^^ (Keyword.intern(_) )
   val symbol : Parser[Symbol]   = """[a-zA-Z][^,#\"\{\}\[\]\(\)\s]*""".r ^^ (Symbol.create(_))
+  //val discardElem : Parser[Any] =  "#_" ~> expr ^^ (a => ())
 
   val ednElem : Parser[Any] = list |
                 map |
@@ -35,8 +36,9 @@ object EdnParser extends JavaTokenParsers {
                 set |
                 keyword |
                 tagElem |
+            //    discardElem |
                 ratio |
-  //     wholeNumber <~ not(".") ^^ (_.toInt) |
+                wholeNumber <~ not(".") ^^ (_.toInt) |
                 floatingPointNumber ^^ (_.toDouble) |
                 "nil" ^^ (_ => null) |
                 "true" ^^ (_ => true) |

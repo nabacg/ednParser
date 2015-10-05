@@ -28,12 +28,30 @@ class ParserTest extends FunSuite{
     assertResult(-3.14) {testEval("-3.14")}
   }
 
+  test("equality") {
+    assertResult(true) {
+      val i = testEval("2")
+      val d = testEval("2.0000000000000")
+      i == d
+    }
+
+    assertResult(false) {
+      val i = testEval("2")
+      val d = testEval("2.0000000000001")
+      i == d
+    }
+  }
+
+//  test("discard element") {
+//    assertResult(Vector(1,2,3)) { testEval("[1 2 #_discardMe 3]")}
+//  }
+
   test("nil ") {
     assertResult(null) { testEval("nil")}
   }
 
   test("booleans") {
-    assertResult(true) {testEval("true")}
+    assertResult(true) { testEval("true")}
     assertResult(false) { testEval("false")}
   }
   
@@ -44,14 +62,14 @@ class ParserTest extends FunSuite{
   }
 
   test("ratios") {
-    assertResult(0.5) {testEval("1/2")}
-    assertResult(0.5) {testEval("6/12")}
+    assertResult(0.5) { testEval("1/2")}
+    assertResult(0.5) { testEval("6/12")}
     assertResult(Set(0.5, 1)) { testEval("#{1/2 42/42}") }
   }
 
   test("dates aka #inst") {
     val dateString = "2015-07-30T01:23:45.000-00:00"
-    assertResult(InstantReader.read(dateString)) {testEval(f"""#inst \"$dateString\"""")}
+    assertResult(InstantReader.read(dateString)) { testEval(f"""#inst \"$dateString\"""")}
 
     val dateStringNoOffset = "1985-04-12T23:20:50.52Z"
     assertResult(InstantReader.read(dateString)) {testEval(f"""#inst \"$dateString\"""")}
