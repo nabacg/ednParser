@@ -11,33 +11,33 @@ import java.util.UUID
  */
 
 class ParserTest extends FunSuite{
-  def testEval (str : String) = EdnParser.eval(str)
+  def testParser (str : String) = EdnParser.read(str)
   
   test("integers") {
-    assertResult(0){testEval("0")}
-    assertResult(1){testEval("0001")}
-    assertResult(23) {testEval("23")}
-    assertResult(1) {testEval("1")}
-    assertResult(-43) { testEval("-43")}
+    assertResult(0){testParser("0")}
+    assertResult(1){testParser("0001")}
+    assertResult(23) {testParser("23")}
+    assertResult(1) {testParser("1")}
+    assertResult(-43) { testParser("-43")}
   }
   test("floating point") {
-    assertResult(53.1) {testEval("53.1")}
-    assertResult(1.5) {testEval("1.5")}
-    assertResult(0.0005) {testEval("0.0005")}
-    assertResult(0.5) {testEval("0.5000")}
-    assertResult(-3.14) {testEval("-3.14")}
+    assertResult(53.1) {testParser("53.1")}
+    assertResult(1.5) {testParser("1.5")}
+    assertResult(0.0005) {testParser("0.0005")}
+    assertResult(0.5) {testParser("0.5000")}
+    assertResult(-3.14) {testParser("-3.14")}
   }
 
   test("equality") {
     assertResult(true) {
-      val i = testEval("2")
-      val d = testEval("2.0000000000000")
+      val i = testParser("2")
+      val d = testParser("2.0000000000000")
       i == d
     }
 
     assertResult(false) {
-      val i = testEval("2")
-      val d = testEval("2.0000000000001")
+      val i = testParser("2")
+      val d = testParser("2.0000000000001")
       i == d
     }
   }
@@ -47,79 +47,94 @@ class ParserTest extends FunSuite{
 //  }
 
   test("nil ") {
-    assertResult(null) { testEval("nil")}
+    assertResult(null) { testParser("nil")}
   }
 
   test("booleans") {
-    assertResult(true) { testEval("true")}
-    assertResult(false) { testEval("false")}
+    assertResult(true) { testParser("true")}
+    assertResult(false) { testParser("false")}
   }
   
   test("string") {
-    assertResult("1") { testEval("\"1\"")}
-    assertResult("AA") { testEval("\"AA\"")}
-    assertResult("") { testEval("\"\"")}
+    assertResult("1") { testParser("\"1\"")}
+    assertResult("AA") { testParser("\"AA\"")}
+    assertResult("") { testParser("\"\"")}
   }
 
   test("ratios") {
-    assertResult(0.5) { testEval("1/2")}
-    assertResult(0.5) { testEval("6/12")}
-    assertResult(Set(0.5, 1)) { testEval("#{1/2 42/42}") }
+    assertResult(0.5) { testParser("1/2")}
+    assertResult(0.5) { testParser("6/12")}
+    assertResult(Set(0.5, 1)) { testParser("#{1/2 42/42}") }
   }
 
   test("dates aka #inst") {
     val dateString = "2015-07-30T01:23:45.000-00:00"
-    assertResult(InstantReader.read(dateString)) { testEval(f"""#inst \"$dateString\"""")}
+    assertResult(InstantReader.read(dateString)) { testParser(f"""#inst \"$dateString\"""")}
 
     val dateStringNoOffset = "1985-04-12T23:20:50.52Z"
-    assertResult(InstantReader.read(dateString)) {testEval(f"""#inst \"$dateString\"""")}
+    assertResult(InstantReader.read(dateString)) {testParser(f"""#inst \"$dateString\"""")}
   }
 
   test("#uuid tagged elem") {
     var uuid = UUID.randomUUID()
-    assertResult(uuid) { testEval(s"""#uuid \"${uuid.toString}\"""") }
-    assertResult(UUID.fromString("f81d4fae-7dec-11d0-a765-00a0c91e6bf6")) { testEval("#uuid \"f81d4fae-7dec-11d0-a765-00a0c91e6bf6\"")}
+    assertResult(uuid) { testParser(s"""#uuid \"${uuid.toString}\"""") }
+    assertResult(UUID.fromString("f81d4fae-7dec-11d0-a765-00a0c91e6bf6")) { testParser("#uuid \"f81d4fae-7dec-11d0-a765-00a0c91e6bf6\"")}
   }
 
   test("List") {
-    assertResult(List()){testEval("()")}
-    assertResult(List(1,2,3)) {testEval("(1 2 3)")}
-    assertResult(List(1,2,3)) {testEval("(1,2,3)")}
+    assertResult(List()){testParser("()")}
+    assertResult(List(1,2,3)) {testParser("(1 2 3)")}
+    assertResult(List(1,2,3)) {testParser("(1,2,3)")}
   }
 
   test("vectors ") {
-    assertResult(Vector(1)) { testEval("[1]")}
-    assertResult(Vector(1,2, 3)) { testEval("[1 2 3]")}
-    assertResult(Vector()) { testEval("[]")}
-    assertResult(Vector(1,2,3)) {testEval("[1,2,3]")}
+    assertResult(Vector(1)) { testParser("[1]")}
+    assertResult(Vector(1,2, 3)) { testParser("[1 2 3]")}
+    assertResult(Vector()) { testParser("[]")}
+    assertResult(Vector(1,2,3)) {testParser("[1,2,3]")}
   }
 
   test("maps") {
-    assertResult(Map(1 -> 12))(testEval("{ 1 12}") )
+    assertResult(Map(1 -> 12))(testParser("{ 1 12}") )
 
-    assertResult(Map(1 -> 12, 2 -> 231))( testEval("{ 1 12 2 231}"))
-    assertResult(Map())( testEval("{}"))
+    assertResult(Map(1 -> 12, 2 -> 231))( testParser("{ 1 12 2 231}"))
+    assertResult(Map())( testParser("{}"))
   }
 
   test("sets") {
-    assertResult(Set(1, 2, 3))(testEval("#{1 2 3}") )
+    assertResult(Set(1, 2, 3))(testParser("#{1 2 3}") )
 
-    assertResult(Set())( testEval("#{}"))
+    assertResult(Set())( testParser("#{}"))
   }
 
 
   test("clojure keywords and symbols") {
-    assertResult(Symbol.intern("a")) { testEval("a") }
-    assertResult(Symbol.intern("f")) { testEval("f") }
-    assertResult(Symbol.intern("test-namespace/state")) { testEval("test-namespace/state") }
+    assertResult(Symbol.intern("a")) { testParser("a") }
+    assertResult(Symbol.intern("f")) { testParser("f") }
+    assertResult(Symbol.intern("test-namespace/state")) { testParser("test-namespace/state") }
 
-    assertResult(Keyword.intern("a")) { testEval(":a") }
-    assertResult(Keyword.intern(":f")) { testEval("::f") }
-    assertResult(Keyword.intern("test/asd")) { testEval(":test/asd") }
+    assertResult(Keyword.intern("a")) { testParser(":a") }
+    assertResult(Keyword.intern(":f")) { testParser("::f") }
+    assertResult(Keyword.intern("test/asd")) { testParser(":test/asd") }
 
-    assertResult(List("a", "b", "c", "d").map(Keyword.intern)) { testEval("(:a :b :c :d )")}
+    assertResult(List("a", "b", "c", "d").map(Keyword.intern)) { testParser("(:a :b :c :d )")}
 
-    assertResult(List("a", "b", "c", "d").map(Symbol.intern)) { testEval("(a b c d )")}
-    assertResult(Vector("a", "b", "c", "d").map(Symbol.intern)) { testEval("[a b c d ]")}
+    assertResult(List("a", "b", "c", "d").map(Symbol.intern)) { testParser("(a b c d )")}
+    assertResult(Vector("a", "b", "c", "d").map(Symbol.intern)) { testParser("[a b c d ]")}
+  }
+
+  test("arithmetic") {
+    assertResult(List(Symbol.intern("+"), 2, 2)) {
+      testParser("(+ 2 2)")
+    }
+    assertResult(List(Symbol.intern("-"), 2, 2)) {
+      testParser("(- 2 2)")
+    }
+    assertResult(List(Symbol.intern("/"), 2, 2)) {
+      testParser("(/ 2 2)")
+    }
+    assertResult(List(Symbol.intern("*"), 2, 2)) {
+      testParser("(* 2 2)")
+    }
   }
 }

@@ -1,5 +1,7 @@
 package net.cabworks.EdnParser
-import net.cabworks.EdnParser.EdnParser
+
+
+import net.cabworks.Evaluator.Evaluator
 
 import scala.io.StdIn
 
@@ -17,7 +19,8 @@ object EdnRepl {
     input match {
       case in : String if in.length() > 0 => {
         //this |> ( EdnParser.eval(input), println)
-        val result = EdnParser.eval(in)
+       // val result = EdnParser.read(in)
+        val result = Evaluator.eval(in)
         println(result)
         replLoop
       }

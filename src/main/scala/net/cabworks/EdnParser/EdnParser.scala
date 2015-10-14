@@ -27,7 +27,7 @@ object EdnParser extends JavaTokenParsers {
   val ratio : Parser[Double] = decimalNumber ~ "/" ~ decimalNumber ^^ { case n ~ _ ~ d => n.toDouble / d.toDouble }
 
   val keyword : Parser[Keyword] = ":" ~> """[^,#\"\{\}\[\]\s]+""".r ^^ (Keyword.intern(_) )
-  val symbol : Parser[Symbol]   = """[a-zA-Z][^,#\"\{\}\[\]\(\)\s]*""".r ^^ (Symbol.create(_))
+  val symbol : Parser[Symbol]   = """[a-zA-Z\+\/\*\-][^,#\"\{\}\[\]\(\)\s]*""".r ^^ (Symbol.create(_))
   //val discardElem : Parser[Any] =  "#_" ~> expr ^^ (a => ())
 
   val ednElem : Parser[Any] = list |
@@ -50,7 +50,7 @@ object EdnParser extends JavaTokenParsers {
 
 
 
-  def eval(input: String) : Any = parseAll(expr, input) match {
+  def read(input: String) : Any = parseAll(expr, input) match {
     case Failure(msg, n)=> println(msg + " " + n.toString)
     case Error(msg, n) => println("Fatal error" + msg)
     case Success(r,n) => r
