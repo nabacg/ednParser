@@ -137,4 +137,14 @@ class ParserTest extends FunSuite{
       testParser("(* 2 2)")
     }
   }
+
+  test("quoted lists") {
+    assertResult(List(Symbol.intern("quote"), List(1, 2, 2))) {
+      testParser("'(1 2 2)")
+    }
+    assertResult(List(Symbol.intern("quote"), List(Symbol.intern("+"), 2, 2))) {
+      testParser("'(+ 2 2)")
+    }
+
+  }
 }

@@ -27,8 +27,10 @@ object EdnParser extends JavaTokenParsers {
   val ratio : Parser[Double] = decimalNumber ~ "/" ~ decimalNumber ^^ { case n ~ _ ~ d => n.toDouble / d.toDouble }
 
   val keyword : Parser[Keyword] = ":" ~> """[^,#\"\{\}\[\]\s]+""".r ^^ (Keyword.intern(_) )
-  val symbol : Parser[Symbol]   = """[a-zA-Z\+\/\*\-][^,#\"\{\}\[\]\(\)\s]*""".r ^^ (Symbol.create(_))
+  val symbol : Parser[Symbol]   = """[a-zA-Z\+\/\*\-\=\<\>][^,#\"\{\}\[\]\(\)\s]*""".r ^^ (Symbol.create(_))
   //val discardElem : Parser[Any] =  "#_" ~> expr ^^ (a => ())
+
+  val quotedForm : Parser[List[Any]] = "'" ~> ednElem ^^ (List(Symbol.intern("quote"), _))
 
   val ednElem : Parser[Any] = list |
                 map |
@@ -36,6 +38,7 @@ object EdnParser extends JavaTokenParsers {
                 set |
                 keyword |
                 tagElem |
+                quotedForm |
             //    discardElem |
                 ratio |
                 wholeNumber <~ not(".") ^^ (_.toInt) |
