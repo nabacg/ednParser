@@ -13,14 +13,12 @@ object EdnRepl {
   def |>[T, R] (a : T, f : (T) => R) : R = f(a)
 
   def replLoop : Unit = {
-    print("Edn>")
-    Console.flush()
-    val input = StdIn.readLine()
+    val input = StdIn.readLine("Edn>")
     input match {
       case in : String if in.length() > 0 => {
         //this |> ( EdnParser.eval(input), println)
        // val result = EdnParser.read(in)
-        val result = Evaluator.eval(in)
+        val result = Evaluator.evalString(in)
         println(result)
         replLoop
       }

@@ -12,7 +12,8 @@ import java.util.UUID
 
 class ParserTest extends FunSuite{
   def testParser (str : String) = EdnParser.read(str)
-  
+  val sym = TestHelpers.sym(_)
+
   test("integers") {
     assertResult(0){testParser("0")}
     assertResult(1){testParser("0001")}
@@ -146,5 +147,18 @@ class ParserTest extends FunSuite{
       testParser("'(+ 2 2)")
     }
 
+  }
+
+  test("defs") {
+    assertResult(List(sym("def"), sym("a"), 1)) {
+      testParser("(def a 1)")
+    }
+  }
+
+  test("fns") {
+    assertResult(List(Symbol.intern("fn"), Vector(Symbol.intern("a"), Symbol.intern("b")), List(Symbol.intern("+"), Symbol.intern("a"), Symbol.intern("b")))) {
+
+      testParser("(fn [a b] (+ a b))")
+    }
   }
 }

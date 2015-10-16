@@ -1,15 +1,16 @@
 package net.cabworks.test.EdnParser
 
 import clojure.lang.{Keyword, Symbol}
-import com.sun.javaws.exceptions.InvalidArgumentException
 import net.cabworks.Evaluator.Evaluator
 import org.scalatest.FunSuite
+
 
 /**
  * Created by cab on 14/10/2015.
  */
 class EvaluatorTests extends FunSuite {
   def eval(input : String) = Evaluator.evalString(input)
+  val sym = TestHelpers.sym(_)
 
   test("self evaluating") {
     assertResult(1) { eval("1") }
@@ -19,14 +20,14 @@ class EvaluatorTests extends FunSuite {
 
 
 
-    try {
-      eval("b")
-      fail()
-    }
-    catch {
-      case _ : InvalidArgumentException =>
-      case d : Throwable => fail()
-    }
+//    try {
+//      eval("b")
+//      fail()
+//    }
+//    catch {
+//      case _ : InvalidArgumentException =>
+//      case d : Throwable => fail()
+//    }
 
   }
 
@@ -42,6 +43,10 @@ class EvaluatorTests extends FunSuite {
     assertResult(0) { eval("(- 2 2)")}
     assertResult(1) { eval("(/ 2 2)")}
     assertResult(42) { eval("(* 6 7)")}
+  }
+
+  test("multi expressions") {
+    assertResult(4) { eval("(- 2 2 ) (+ 2 2)")}
   }
 
   test("nested expressions") {
@@ -74,5 +79,55 @@ class EvaluatorTests extends FunSuite {
     assertResult("True indeed") { eval("(if (and true (> 2 1) (< 0 23)) \"True indeed\"  \"Deeply false\")")}
     assertResult("True indeed") { eval("(if (and true (> 2 1) (< 0 23) (= 4 (+ 2 2))) \"True indeed\"  \"Deeply false\")")}
     assertResult("Deeply false") { eval("(if (and true (> 2 1) (< 0 23) (= 4 (+ 2 3))) \"True indeed\"  \"Deeply false\")")}
+  }
+
+  test("def") {
+    assertResult(72) {
+      eval("(def b 72)")
+      eval("b")
+    }
+
+    assertResult(72) {
+      eval("(def b (+ 2 30 (* 4 10)))")
+    }
+    assertResult(72) {
+      eval("(def b (+ 2 30 (* 4 10)))")
+      eval("b")
+    }
+
+    assertResult(10) {
+      eval("(def b 3)")
+      eval("(+ b 7)")
+    }
+  }
+
+  test("lambda") {
+//    val a = eval("(fn [a b] (+ a b))")
+//    assert(a.isInstanceOf[Function2[Int, Int, Int]])
+    assertResult((Vector(sym("a"), sym("b")), List(sym("+"), sym("a"), sym("b")))) {
+      eval("(fn [a b] (+ a b))")
+    }
+    assertResult((Vector(sym("a"), sym("b")), List(sym("+"), sym("a"), sym("b")))) {
+      eval("(fn [a b] (+ a b))")
+    }
+  }
+
+  test("apply") {
+    assertResult(2) {
+      eval("(def f (fn [a b] (+ a b)))")
+      eval("(f 1 1)")
+    }
+
+    assertResult(9) {
+      eval("(def f (fn [a b] (* (+ a b) (- 5 a))))")
+      eval("(f 2 1)")
+    }
+  }
+
+}
+
+object TestHelpers {
+  def sym(s : String) : Symbol= {
+    Symbol.intern(s)
   }
 }
